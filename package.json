@@ -1,0 +1,19 @@
+{
+  "name": "not-is-plague",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "node -r dotenv/config index.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "node-fetch": "^3.1.0",
+    "steam-totp": "^2.1.1",
+    "steam-user": "^4.20.1"
+  },
+  "devDependencies": {
+    "dotenv": "^10.0.0"
+  }
+}
