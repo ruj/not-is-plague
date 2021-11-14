@@ -20,7 +20,7 @@ const { Activities, Intervals } = {
   Activities: keyMirror(['PLAYING', 'NOT_PLAYING']),
   Intervals: Array.from(
     { length: 50 },
-    () => Math.floor(Math.random() * 2) + 1
+    () => Math.floor(Math.random() * 50) + 10
   )
 }
 
