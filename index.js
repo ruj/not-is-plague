@@ -68,18 +68,25 @@ new (class NotIsPlague extends SteamUser {
   }
 
   onFriendRelationship (sender, relationship, previousRelationship) {
-    this.print('FRIEND_RELATIONSHIP', `profiles/${sender}`)
+    if (SteamUser.EFriendRelationship.RequestRecipient === relationship) {
+      this.print('FRIEND_RELATIONSHIP', `profiles/${sender}`)
 
-    this.addFriend(sender, (error, personaName) => {
+      this.addFriend(sender, (error, personaName) => {
+        this.print(
+          'FRIEND_RELATIONSHIP',
+          `profiles/${sender} ${
+            !error
+              ? `-- ${personaName} {${SteamUser.EFriendRelationship[previousRelationship]} >> ${SteamUser.EFriendRelationship[relationship]}}`
+              : error.message
+          }`
+        )
+      })
+    } else if (SteamUser.EFriendRelationship.None === relationship) {
       this.print(
         'FRIEND_RELATIONSHIP',
-        `profiles/${sender} ${
-          !error
-            ? `-- ${personaName} {${SteamUser.EFriendRelationship[previousRelationship]} >> ${SteamUser.EFriendRelationship[relationship]}}`
-            : error.message
-        }`
+        `profiles/${sender} {${SteamUser.EFriendRelationship[previousRelationship]} >> ${SteamUser.EFriendRelationship[relationship]}}`
       )
-    })
+    }
   }
 
   onError (error) {
