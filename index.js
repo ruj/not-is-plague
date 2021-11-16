@@ -68,6 +68,8 @@ new (class NotIsPlague extends SteamUser {
   }
 
   onFriendRelationship (sender, relationship, previousRelationship) {
+    const relationshipUpdate = `{${SteamUser.EFriendRelationship[previousRelationship]} >> ${SteamUser.EFriendRelationship[relationship]}}`
+
     if (SteamUser.EFriendRelationship.RequestRecipient === relationship) {
       this.print('FRIEND_RELATIONSHIP', `profiles/${sender}`)
 
@@ -75,17 +77,12 @@ new (class NotIsPlague extends SteamUser {
         this.print(
           'FRIEND_RELATIONSHIP',
           `profiles/${sender} ${
-            !error
-              ? `-- ${personaName} {${SteamUser.EFriendRelationship[previousRelationship]} >> ${SteamUser.EFriendRelationship[relationship]}}`
-              : error.message
+            !error ? `-- ${personaName} ${relationshipUpdate}` : error.message
           }`
         )
       })
     } else if (SteamUser.EFriendRelationship.None === relationship) {
-      this.print(
-        'FRIEND_RELATIONSHIP',
-        `profiles/${sender} {${SteamUser.EFriendRelationship[previousRelationship]} >> ${SteamUser.EFriendRelationship[relationship]}}`
-      )
+      this.print('FRIEND_RELATIONSHIP', `profiles/${sender} ${relationshipUpdate}`)
     }
   }
 
