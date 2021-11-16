@@ -38,6 +38,7 @@ new (class NotIsPlague extends SteamUser {
 
     this.on('loggedOn', this.onLoggedOn)
     this.on('playingState', this.onPlayingState)
+    this.on('friendRelationship', this.onFriendRelationship)
     this.on('error', this.onError)
   }
 
@@ -64,6 +65,21 @@ new (class NotIsPlague extends SteamUser {
     if (this.playStateBlocked !== blocked) {
       this.playStateBlocked = blocked
     }
+  }
+
+  onFriendRelationship (sender, relationship, previousRelationship) {
+    this.print('FRIEND_RELATIONSHIP', `profiles/${sender}`)
+
+    this.addFriend(sender, (error, personaName) => {
+      this.print(
+        'FRIEND_RELATIONSHIP',
+        `profiles/${sender} ${
+          !error
+            ? `-- ${personaName} {${SteamUser.EFriendRelationship[previousRelationship]} >> ${SteamUser.EFriendRelationship[relationship]}}`
+            : error.message
+        }`
+      )
+    })
   }
 
   onError (error) {
