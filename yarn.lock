@@ -796,10 +796,10 @@ steam-totp@^2.0.1, steam-totp@^2.1.1:
   resolved "https://registry.yarnpkg.com/steam-totp/-/steam-totp-2.1.1.tgz#c02c2696a062e676475d79712661e9f576ace4de"
   integrity sha512-d+tjnr3wwDkbrKFxjYZ0uK4CSF09oJwCmlGH8SdOlTDkbtBPuNhPKY0XzZxQVltZF6/JkEYj+uz+kBr6UrY7BQ==
 
-steam-user@^4.20.1:
-  version "4.20.1"
-  resolved "https://registry.yarnpkg.com/steam-user/-/steam-user-4.20.1.tgz#b994ce962b808f2facec9d0b58853b06207b12b6"
-  integrity sha512-7S7KI6IjPYTnA5kRsWwZU9cWmjg6CzTnHxvDENIaBAbRaxInS7QS7uCvi8rYcFCKVqVHlJOesnjobZBxgVLMMg==
+steam-user@^4.20.2:
+  version "4.20.2"
+  resolved "https://registry.yarnpkg.com/steam-user/-/steam-user-4.20.2.tgz#a4d8d10dd1528a513ec7ae25ab3589003d74f908"
+  integrity sha512-mHscRYnsAnzegIyZIBXcagNEyqu66HyIZtjv9oxyR9hM5DUoDWbZxQkeboKmhqBPprpocGHd9e3YZLZcH5aThw==
   dependencies:
     "@bbob/parser" "^2.2.0"
     "@doctormckay/stdlib" "^1.11.1"
