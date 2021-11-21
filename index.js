@@ -68,11 +68,23 @@ new (class NotIsPlague extends SteamUser {
     }
   }
 
-  onFriendRelationship (sender, relationship, previousRelationship) {
+  async onFriendRelationship (sender, relationship, previousRelationship) {
     const relationshipUpdate = `{${SteamUser.EFriendRelationship[previousRelationship]} >> ${SteamUser.EFriendRelationship[relationship]}}`
 
     if (SteamUser.EFriendRelationship.RequestRecipient === relationship) {
       this.print('FRIEND_RELATIONSHIP', `profiles/${sender}`)
+
+      const { users } = await this.getSteamLevels([sender])
+      const level = users[sender]
+
+      if (level < 1) {
+        this.print(
+          'FRIEND_RELATIONSHIP',
+          `profiles/${sender} -- Invite ignored, reason: level ${level}.`
+        )
+
+        return this.removeFriend(sender)
+      }
 
       this.addFriend(sender, (error, personaName) =>
         this.print(
@@ -90,7 +102,7 @@ new (class NotIsPlague extends SteamUser {
     }
   }
 
-  onFriendsList () {
+  async onFriendsList () {
     const inviters = Object.keys(this.myFriends).filter(
       (steamID) =>
         this.myFriends[steamID] ===
@@ -98,6 +110,8 @@ new (class NotIsPlague extends SteamUser {
     )
 
     if (inviters.length) {
+      const { users } = await this.getSteamLevels(inviters)
+
       this.print(
         'FRIENDS_LIST',
         `${inviters.length} invitation${
@@ -105,19 +119,30 @@ new (class NotIsPlague extends SteamUser {
         } received`
       )
 
-      inviters.forEach((inviter, index) =>
-        setTimeout(
-          () =>
+      inviters.forEach((inviter, index, self) =>
+        setTimeout(() => {
+          const level = users[inviter]
+          const currentAndTotal = `(${index + 1}/${self.length})`
+
+          if (level >= 1) {
             this.addFriend(inviter, (error, personaName) =>
               this.print(
                 'FRIENDS_LIST',
                 `profiles/${inviter} ${
-                  !error ? `-- ${personaName}` : error.message
+                  !error
+                    ? `-- ${personaName} ${currentAndTotal}`
+                    : error.message
                 }`
               )
-            ),
-          2555 * index
-        )
+            )
+          } else {
+            this.print(
+              'FRIENDS_LIST',
+              `profiles/${inviter} -- Invite ignored, reason: level ${level}. ${currentAndTotal}`
+            )
+            this.removeFriend(inviter)
+          }
+        }, 2555 * index)
       )
     }
   }
