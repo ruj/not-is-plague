@@ -39,6 +39,7 @@ new (class NotIsPlague extends SteamUser {
     this.on('loggedOn', this.onLoggedOn)
     this.on('playingState', this.onPlayingState)
     this.on('friendRelationship', this.onFriendRelationship)
+    this.on('friendsList', this.onFriendsList)
     this.on('error', this.onError)
   }
 
@@ -73,16 +74,51 @@ new (class NotIsPlague extends SteamUser {
     if (SteamUser.EFriendRelationship.RequestRecipient === relationship) {
       this.print('FRIEND_RELATIONSHIP', `profiles/${sender}`)
 
-      this.addFriend(sender, (error, personaName) => {
+      this.addFriend(sender, (error, personaName) =>
         this.print(
           'FRIEND_RELATIONSHIP',
           `profiles/${sender} ${
             !error ? `-- ${personaName} ${relationshipUpdate}` : error.message
           }`
         )
-      })
+      )
     } else if (SteamUser.EFriendRelationship.None === relationship) {
-      this.print('FRIEND_RELATIONSHIP', `profiles/${sender} ${relationshipUpdate}`)
+      this.print(
+        'FRIEND_RELATIONSHIP',
+        `profiles/${sender} ${relationshipUpdate}`
+      )
+    }
+  }
+
+  onFriendsList () {
+    const inviters = Object.keys(this.myFriends).filter(
+      (steamID) =>
+        this.myFriends[steamID] ===
+        SteamUser.EFriendRelationship.RequestRecipient
+    )
+
+    if (inviters.length) {
+      this.print(
+        'FRIENDS_LIST',
+        `${inviters.length} invitation${
+          inviters.length > 1 ? 's' : ''
+        } received`
+      )
+
+      inviters.forEach((inviter, index) =>
+        setTimeout(
+          () =>
+            this.addFriend(inviter, (error, personaName) =>
+              this.print(
+                'FRIENDS_LIST',
+                `profiles/${inviter} ${
+                  !error ? `-- ${personaName}` : error.message
+                }`
+              )
+            ),
+          2555 * index
+        )
+      )
     }
   }
 
