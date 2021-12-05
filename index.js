@@ -189,6 +189,17 @@ new (class NotIsPlague extends SteamUser {
       const interval = this.shiftAndPush(Intervals)
       const { appID, name } = this.random(games)
 
+      this.setPersona(
+        activity === Activities.NOT_PLAYING
+          ? SteamUser.EPersonaState[
+              this.random(
+                Object.keys(EPersonaState)
+                  .filter((state) => !/Offline|Invisible/.test(state))
+                  .filter(isNaN)
+              )
+            ]
+          : SteamUser.EPersonaState.Online
+      )
       this.gamesPlayed(activity === Activities.PLAYING ? appID : [])
 
       this.print(
