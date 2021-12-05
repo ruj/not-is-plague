@@ -193,7 +193,7 @@ new (class NotIsPlague extends SteamUser {
         activity === Activities.NOT_PLAYING
           ? SteamUser.EPersonaState[
               this.random(
-                Object.keys(EPersonaState)
+                Object.keys(SteamUser.EPersonaState)
                   .filter((state) => !/Offline|Invisible/.test(state))
                   .filter(isNaN)
               )
