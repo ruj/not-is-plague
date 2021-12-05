@@ -1,6 +1,7 @@
 const qs = require('querystring')
 
 const SteamUser = require('steam-user')
+const SteamCommunity = require('steamcommunity')
 const SteamTotp = require('steam-totp')
 const fetch = (...args) =>
   import('node-fetch').then(({ default: fetch }) => fetch(...args))
@@ -28,6 +29,8 @@ new (class NotIsPlague extends SteamUser {
   constructor () {
     super({ dataDirectory: null })
 
+    this.community = new SteamCommunity()
+
     this.playStateBlocked = false
 
     this.logOn({
@@ -37,6 +40,7 @@ new (class NotIsPlague extends SteamUser {
     })
 
     this.on('loggedOn', this.onLoggedOn)
+    this.on('webSession', this.onWebSession)
     this.on('playingState', this.onPlayingState)
     this.on('friendRelationship', this.onFriendRelationship)
     this.on('friendsList', this.onFriendsList)
@@ -60,6 +64,11 @@ new (class NotIsPlague extends SteamUser {
     this.periodicallyPlayGames(
       games.map(({ appid, name }) => ({ appID: appid, name }))
     )
+  }
+
+  onWebSession (sessionID, cookies) {
+    this.community.setCookies(cookies)
+    this.print('WEB_SESSION', this.community.getSessionID())
   }
 
   onPlayingState (blocked) {
