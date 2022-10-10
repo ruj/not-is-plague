@@ -11,7 +11,13 @@ const app = express()
 app.get('/', (request, response) => response.sendStatus(200))
 app.listen(process.env.PORT)
 
-const { ACCOUNT_NAME, PASSWORD, SHARED_SECRET, STEAM_API_KEY } = process.env
+const {
+  ACCOUNT_NAME,
+  PASSWORD,
+  SHARED_SECRET,
+  STEAM_API_KEY,
+  GAMES_ID
+} = process.env
 
 const keyMirror = (array) => (
   (object = {}), array.forEach((element) => (object[element] = element)), object
@@ -48,21 +54,17 @@ new (class NotIsPlague extends SteamUser {
   }
 
   async onLoggedOn () {
-    const { games, game_count } = await this.request(
-      'IPlayerService',
-      'GetOwnedGames',
-      1,
-      {
-        include_appinfo: 1,
-      }
-    )
+    const { type, games, gameCount } = await this.loadGamesId()
 
     this.print('LOGGED_ON', `profiles/${this.steamID}`)
-    this.print('OWNED_GAMES', `${game_count} games found`)
+    this.print('OWNED_GAMES', `${gameCount} games found`)
 
     this.setPersona(SteamUser.EPersonaState.Online)
     this.periodicallyPlayGames(
-      games.map(({ appid, name }) => ({ appID: appid, name }))
+      type,
+      games.map(({ appid, name }) =>
+        ({ appID: appid, name: name ?? 'Unknown game' })
+      )
     )
   }
 
@@ -183,40 +185,81 @@ new (class NotIsPlague extends SteamUser {
       .then((data) => data.response)
   }
 
-  periodicallyPlayGames (games) {
-    const nested = () => {
-      const activity = this.random(Object.values(Activities))
-      const interval = this.shiftAndPush(Intervals)
-      const { appID, name } = this.random(games)
+  periodicallyPlayGames (type, games) {
+    switch (type.toUpperCase()) {
+      case 'API':
+        const nested = () => {
+          const activity = this.random(Object.values(Activities))
+          const interval = this.shiftAndPush(Intervals)
+          const { appID, name } = this.random(games)
 
-      this.setPersona(
-        activity === Activities.NOT_PLAYING
-          ? SteamUser.EPersonaState[
-              this.random(
-                Object.keys(SteamUser.EPersonaState)
-                  .filter((state) => !/Offline|Invisible/.test(state))
-                  .filter(isNaN)
-              )
-            ]
-          : SteamUser.EPersonaState.Online
-      )
-      this.gamesPlayed(activity === Activities.PLAYING ? appID : [])
+          this.setPersona(
+            activity === Activities.NOT_PLAYING
+              ? SteamUser.EPersonaState[
+                  this.random(
+                    Object.keys(SteamUser.EPersonaState)
+                      .filter((state) => !/Offline|Invisible/.test(state))
+                      .filter(isNaN)
+                  )
+                ]
+              : SteamUser.EPersonaState.Online
+          )
+          this.gamesPlayed(activity === Activities.PLAYING ? appID : [])
 
-      this.print(
-        activity === Activities.PLAYING
-          ? `${activity} ${appID}/${name}`
-          : activity,
-        `(${interval} mins)`
-      )
-      this.print(
-        'INTERVAL',
-        `${interval} [${Intervals.slice(0, 3)} .. ${interval}]`
-      )
+          this.print(
+            activity === Activities.PLAYING
+              ? `${activity} ${appID}/${name}`
+              : activity,
+            `(${interval} mins)`
+          )
+          this.print(
+            'INTERVAL',
+            `${interval} [${Intervals.slice(0, 3)} .. ${interval}]`
+          )
 
-      setTimeout(nested, 60 * interval * 1e3)
+          setTimeout(nested, 60 * interval * 1e3)
+        }
+
+        setTimeout(nested, 1e3)
+        break
+      case 'LOCAL':
+        this.setPersona(SteamUser.EPersonaState.Online)
+        this.gamesPlayed(games.map(({ appID }) => appID))
+
+        this.print(
+          Activities.PLAYING,
+          `${games.length} games`
+        )
+        break
     }
+  }
 
-    setTimeout(nested, 1e3)
+  async loadGamesId () {
+    if (!GAMES_ID) {
+      const {
+        games,
+        game_count: gameCount
+      } = await this.request(
+        'IPlayerService',
+        'GetOwnedGames',
+        1,
+        {
+          include_appinfo: 1,
+        }
+      )
+
+      return { type: 'api', games, gameCount }
+    } else {
+      const games = GAMES_ID
+        .split(',')
+        .map((appid) => ({ appid: +appid }))
+
+      return {
+        type: 'local',
+        games,
+        gameCount: games.length
+      }
+    }
   }
 
   shiftAndPush (array) {
